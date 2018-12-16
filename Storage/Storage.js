@@ -118,31 +118,17 @@ class Storage
         return await this.conn.select('blocks', 0, 1, 0, 'eq', [hash]);
     }
 
-    async putBlock(block, opCount, transactionsCount, transactionsVolume) {
+    async putToken(id, timestamp, issuer, address, name, description, scamPercent) {
         console.log('insert');
-        return await this.conn.insert('blocks',
+        return await this.conn.insert('tokens',
             [
-                ''+block.hash,
-                Number(block.header.level),
-                block.protocol,
-                block.chain_id,
-                block.header.proto,
-                block.header.predecessor,
-                block.header.timestamp,
-                block.header.validation_pass,
-                block.header.operations_hash,
-                Array.isArray(block.header.fitness) ? block.header.fitness : [block.header.fitness],
-                block.header.context,
-                Number(block.header.priority),
-                block.header.proof_of_work_nonce ? block.header.proof_of_work_nonce : '',
-                block.header.signature ? block.header.signature : '',
-                block.metadata.baker ? block.metadata.baker : '',
-                block.metadata.consumed_gas ? Number(block.metadata.consumed_gas):0,
-                block.metadata.voting_period_kind ? block.metadata.voting_period_kind : '',
-                opCount,
-                transactionsCount,
-                transactionsVolume,
-                '', //successor
+                Number(id),
+                Number(timestamp),
+                issuer,
+                address,
+                name,
+                description,
+                scamPercent
             ]
         );
     }

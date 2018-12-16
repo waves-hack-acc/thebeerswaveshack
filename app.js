@@ -1,6 +1,7 @@
 const TarantoolConnection = require('tarantool-driver');
 const Storage = require('./Storage/Storage');
 const axios = require('axios');
+const fs = require('fs');
 
 process.title = 'syncing blockchain';
 
@@ -11,7 +12,7 @@ const WAVES_TOKEN_API_URL = 'https://nodes.wavesnodes.com/transactions/info/';
 const scamCX = '000017508735297593231:bgv_yoycqaq';
 const goodCX = '000017508735297593231:tsmotopvz1c';
 
-// const storage = new Storage(conn);
+const storage = new Storage(conn);
 
 async function start() {
 
@@ -116,3 +117,110 @@ async function checkAccount(address) {
         return 10;
     }
 }
+
+let data = JSON.stringify({
+    "client": {
+        "clientId":      "yourcompanyname",
+        "clientVersion": "1.5.2"
+    },
+    "threatInfo": {
+        "threatTypes":      ["MALWARE", "SOCIAL_ENGINEERING"],
+        "platformTypes":    ["WINDOWS"],
+        "threatEntryTypes": ["URL"],
+        "threatEntries": [
+            {"url": "http://www.google.com/"},
+            {"url": "http://www.urltocheck2.org/"},
+            {"url": "http://www.urltocheck3.com/"}
+        ]
+    }
+})
+
+async function test() {
+    // console.log((await axios.post('https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyARN2JzdGYdQmgW553mJf_ZdotEyW4spIo', data, {
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    // })).data);
+
+    let a = await axios.post('https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyARN2JzdGYdQmgW553mJf_ZdotEyW4spIo', {
+        "client": {
+            "clientId":      "yourcompanyname",
+            "clientVersion": "1.5.2"
+        },
+        "threatInfo": {
+            "threatTypes":      ["MALWARE", "SOCIAL_ENGINEERING"],
+            "platformTypes":    ["WINDOWS"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [
+                {"url": "http://www.google.com/"},
+                {"url": "http://www.urltocheck2.org/"},
+                {"url": "http://tracking.condonors.ml/"}
+            ]
+        }
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+    console.log(a.data);
+}
+
+// test();
+
+function replaceAll(str, what, to) {
+    return str.replace(new RegExp(what, 'g'), to);
+}
+
+async function readFile() {
+    fs.readFile('1.txt', 'utf8', async function(err, content) {
+        let isClosed = false;
+        let str = '';
+        let count = 0;
+        for (let i = 281; i < content.length; i++) {
+            if (content[i] === '\n') {
+                count++;
+                let id = str.substr(0, 6);
+                id = replaceAll(id, ' ', '');
+                id = Number(id);
+                let time = str.substr(7, 19);
+                let year = time.substr(6, 4);
+                let month = time.substr(0, 2);
+                let day = time.substr(3, 2);
+                let timing = time.substr(11);
+
+                time = new Date(year + '-'+month + '-' + day + 'T' + timing + "Z");
+                time = time.getTime();
+
+                let issuer = str.substr(27, 35);
+                let assetId = str.substr(63, 44);
+
+                assetId = replaceAll(assetId ,' ', '');
+
+                issuer = replaceAll(issuer, ' ', '');
+
+                let name  = str.substr(108, 21);
+
+                while (name.length > 0 && name[name.length-1] === ' ')
+                    name = name.substr(0, name.length-1);
+
+                let desc = str.substr(129);
+
+                while (desc.length > 0 && desc[desc.length-1] === ' ')
+                    desc = desc.substr(0, desc.length-1);
+                console.log(desc);
+
+                await storage.putToken(id, time, issuer, assetId, name, desc, 50);
+
+                str = '';
+            } else {
+                str += content[i];
+            }
+
+        }
+        console.log(count);
+    });
+
+}
+
+readFile();
+// console.log(replaceAll('aaaaaaaaavvvv', 'a', 't'));
