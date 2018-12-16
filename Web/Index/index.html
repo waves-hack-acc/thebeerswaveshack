@@ -11,6 +11,7 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css">
 		<link rel="stylesheet" href="../dist/milligram.min.css">
 		<link rel="stylesheet" href="https://milligram.github.io/styles/main.css">
+		<link rel="stylesheet" href="css/circle.css">
 	</head>
 	<body>
 
@@ -37,13 +38,20 @@
 				<form>
 					<fieldset>
 						<label for="nameField">Token Address</label>
-						<input type="text" placeholder="3PKotwFdFJYRTBDCvPQ7cbTYDo24P5vZnBV" id="nameField">
+						<input type="text" placeholder="Token address " id="nameField">
 						<input class="button button-outline" type="submit" value="Check Asset" id="checkButton" >
 				<label id="attention"></label>
+						<div id='ProgressBarDIV'>
+
+						</div>
+
 					</fieldset>
 				</form>
 				</p>
 			</section>
+
+
+
 
 
 			<footer class="footer">
@@ -53,17 +61,14 @@
 			</footer>
 
 		</main>
+
+
+
 		<script>
-			var butProp = document.getElementById("checkButton");
-			var isToken = 'N';
-			var token = '';
-			var button = document.getElementById("checkButton");
-			var input = document.getElementById('nameField');
 
-
-			button.onclick = function() {
-				token = document.getElementById("nameField").value;
-				var retStr = 'http://localhost:8080/api/get?hash=' + str(token);
+			document.getElementById("checkButton").onclick = function() {
+				let token = document.getElementById("nameField").value;
+				var retStr = 'http://localhost:8080/api/get?hash=' + String(token);
 				// alert(token);
 				if (token.length < 35) {
 					document.getElementById("attention").innerHTML = 'Attention token address is incorrect';
@@ -72,28 +77,27 @@
 					fetch(retStr)
 						.then(response => response.json())
 						.then(data => {
-							// Do what you want with your data
+							printResult(data.data[0]);
 						});
-				} else if (token.length === 43){
+				} else if (token.length === 43 || token.length === 44) {
 					document.getElementById("attention").innerHTML = 'Good';
 					fetch(retStr)
-						.then(response => response.json())
-						.then(data => {
-						// Do what you want with your data
-						});
-				} else if (token.length === 44){
-					document.getElementById("attention").innerHTML = 'Good';
-					fetch(retStr)
-						.then(response => response.json())
-						.then(data => {
-							// Do what you want with your data
-						});
+							.then(response => response.json())
+							.then(data => {
+								printResult(data.data[0]);
+							});
 				} else {
 					document.getElementById("attention").innerHTML = 'Attention token address is incorrect';
 				}
 				return false;
 			};
-			console.log(123);
+
+			function printResult(val){
+				document.getElementById("attention").innerHTML = 'Name: ' + val[4] +  '; scam percent: ' + val[6] + '%';
+				document.getElementById("ProgressBarDIV").innerHTML = '<div id="ProgressBar" class="c100 p' + val[6] + '"> <span id="Percent">'+ val[6] +  '%</span><div class="slice"><div class="bar"></div><div class="fill"></div></div></div>';
+
+
+			}
 
 		</script>
 

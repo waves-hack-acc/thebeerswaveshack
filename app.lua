@@ -7,7 +7,7 @@ box.cfg {
 function getTokenScamPercent(address)
     local a = box.space.tokens.index.address:select({ address })
     if (table.getn(a) > 0) then
-        return a[1][7]
+        return a[1]
     end
     return nil
 end
